@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import dorkbox.systemTray.SystemTray;
 
 import java.awt.Image;
-import java.awt.TrayIcon;
 import java.util.Optional;
 
 @TrayMenuScoped
@@ -25,7 +24,6 @@ public class TrayIconController {
 	private final Optional<UiAppearanceProvider> appearanceProvider;
 	private final TrayMenuController trayMenuController;
 	private final Image icon;
-	private final TrayIcon trayIcon;
 	private volatile boolean initialized;
 
 	@Inject
@@ -34,7 +32,6 @@ public class TrayIconController {
 		this.imageFactory = imageFactory;
 		this.appearanceProvider = appearanceProvider;
 		this.icon = imageFactory.loadImage();
-		this.trayIcon = new TrayIcon(imageFactory.loadImage(), "Cryptomator");
 	}
 
 	public synchronized void initializeTrayIcon() throws IllegalStateException {
@@ -47,11 +44,6 @@ public class TrayIconController {
 				LOG.error("Failed to enable automatic tray icon theme switching.");
 			}
 		});
-
-		trayIcon.setImageAutoSize(true);
-		if (SystemUtils.IS_OS_WINDOWS) {
-			trayIcon.addActionListener(trayMenuController::showMainWindow);
-		}
 
 		SystemTray systemTray = SystemTray.get("Cryptomator");
 
@@ -71,8 +63,7 @@ public class TrayIconController {
 	}
 
 	private void systemInterfaceThemeChanged(Theme theme) {
-		trayIcon.setImage(imageFactory.loadImage()); // TODO refactor "theme" is re-queried in loadImage()
-		SystemTray.get("Cryptomator").setImage(imageFactory.loadImage());
+		SystemTray.get("Cryptomator").setImage(imageFactory.loadImage()); // TODO refactor "theme" is re-queried in loadImage()
 	}
 
 	public boolean isInitialized() {
