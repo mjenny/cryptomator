@@ -1,5 +1,6 @@
 package org.cryptomator.ui.traymenu;
 
+import dorkbox.systemTray.SystemTray;
 import org.cryptomator.common.vaults.Vault;
 import org.cryptomator.ui.fxapp.FxApplication;
 import org.cryptomator.ui.launcher.AppLifecycleListener;
@@ -7,12 +8,11 @@ import org.cryptomator.ui.launcher.FxApplicationStarter;
 import org.cryptomator.ui.preferences.SelectedPreferencesTab;
 
 import javax.inject.Inject;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.collections.ObservableList;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EventObject;
@@ -27,7 +27,7 @@ class TrayMenuController {
 	private final AppLifecycleListener appLifecycle;
 	private final FxApplicationStarter fxApplicationStarter;
 	private final ObservableList<Vault> vaults;
-	private final PopupMenu menu;
+	private final JMenu menu;
 
 	@Inject
 	TrayMenuController(ResourceBundle resourceBundle, AppLifecycleListener appLifecycle, FxApplicationStarter fxApplicationStarter, ObservableList<Vault> vaults) {
@@ -35,10 +35,10 @@ class TrayMenuController {
 		this.appLifecycle = appLifecycle;
 		this.fxApplicationStarter = fxApplicationStarter;
 		this.vaults = vaults;
-		this.menu = new PopupMenu();
+		this.menu = new JMenu();
 	}
 
-	public PopupMenu getMenu() {
+	public JMenu getMenu() {
 		return menu;
 	}
 
@@ -55,46 +55,50 @@ class TrayMenuController {
 	private void rebuildMenu() {
 		menu.removeAll();
 
-		MenuItem showMainWindowItem = new MenuItem(resourceBundle.getString("traymenu.showMainWindow"));
+		JMenuItem showMainWindowItem = new JMenuItem(resourceBundle.getString("traymenu.showMainWindow"));
 		showMainWindowItem.addActionListener(this::showMainWindow);
 		menu.add(showMainWindowItem);
 
-		MenuItem showPreferencesItem = new MenuItem(resourceBundle.getString("traymenu.showPreferencesWindow"));
+		JMenuItem showPreferencesItem = new JMenuItem(resourceBundle.getString("traymenu.showPreferencesWindow"));
 		showPreferencesItem.addActionListener(this::showPreferencesWindow);
 		menu.add(showPreferencesItem);
 
 		if (vaults.size() > 0) {
 			menu.addSeparator();
 			for (Vault v : vaults) {
-				MenuItem submenu = buildSubmenu(v);
+				JMenuItem submenu = buildSubmenu(v);
 				menu.add(submenu);
 			}
 			menu.addSeparator();
 		}
 
-		MenuItem lockAllItem = new MenuItem(resourceBundle.getString("traymenu.lockAllVaults"));
+		JMenuItem lockAllItem = new JMenuItem(resourceBundle.getString("traymenu.lockAllVaults"));
 		lockAllItem.addActionListener(this::lockAllVaults);
 		lockAllItem.setEnabled(!vaults.filtered(Vault::isUnlocked).isEmpty());
 		menu.add(lockAllItem);
 
-		MenuItem quitApplicationItem = new MenuItem(resourceBundle.getString("traymenu.quitApplication"));
+		JMenuItem quitApplicationItem = new JMenuItem(resourceBundle.getString("traymenu.quitApplication"));
 		quitApplicationItem.addActionListener(this::quitApplication);
 		menu.add(quitApplicationItem);
+
+		SystemTray systemTray = SystemTray.get("Cryptomator");
+		systemTray.getMenu().getEntries().stream().forEach(e -> systemTray.getMenu().remove(e));
+		systemTray.setMenu(this.menu);
 	}
 
-	private Menu buildSubmenu(Vault vault) {
-		Menu submenu = new Menu(vault.getDisplayName());
+	private JMenuItem buildSubmenu(Vault vault) {
+		JMenu submenu = new JMenu(vault.getDisplayName());
 
 		if (vault.isLocked()) {
-			MenuItem unlockItem = new MenuItem(resourceBundle.getString("traymenu.vault.unlock"));
+			JMenuItem unlockItem = new JMenuItem(resourceBundle.getString("traymenu.vault.unlock"));
 			unlockItem.addActionListener(createActionListenerForVault(vault, this::unlockVault));
 			submenu.add(unlockItem);
 		} else if (vault.isUnlocked()) {
-			MenuItem lockItem = new MenuItem(resourceBundle.getString("traymenu.vault.lock"));
+			JMenuItem lockItem = new JMenuItem(resourceBundle.getString("traymenu.vault.lock"));
 			lockItem.addActionListener(createActionListenerForVault(vault, this::lockVault));
 			submenu.add(lockItem);
 
-			MenuItem revealItem = new MenuItem(resourceBundle.getString("traymenu.vault.reveal"));
+			JMenuItem revealItem = new JMenuItem(resourceBundle.getString("traymenu.vault.reveal"));
 			revealItem.addActionListener(createActionListenerForVault(vault, this::revealVault));
 			submenu.add(revealItem);
 		}

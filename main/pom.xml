@@ -38,6 +38,7 @@
 		<javafx.version>15</javafx.version>
 		<commons-lang3.version>3.11</commons-lang3.version>
 		<jwt.version>3.13.0</jwt.version>
+		<dorkbox.systemtray.version>4.1</dorkbox.systemtray.version>
 		<easybind.version>2.1.0</easybind.version>
 		<guava.version>30.0-jre</guava.version>
 		<dagger.version>2.32</dagger.version>
@@ -132,6 +133,19 @@
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-fxml</artifactId>
 				<version>${javafx.version}</version>
+			</dependency>
+
+			<!-- Dorkbox SystemTray -->
+			<dependency>
+				<groupId>com.dorkbox</groupId>
+				<artifactId>SystemTray</artifactId>
+				<version>${dorkbox.systemtray.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-stdlib-jdk8</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<!-- Logging -->

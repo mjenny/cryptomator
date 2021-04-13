@@ -25,6 +25,12 @@
 			<artifactId>javafx-fxml</artifactId>
 		</dependency>
 
+		<!-- Dorkbox SystemTray -->
+		<dependency>
+			<groupId>com.dorkbox</groupId>
+			<artifactId>SystemTray</artifactId>
+		</dependency>
+
 		<!-- EasyBind -->
 		<dependency>
 			<groupId>com.tobiasdiez</groupId>

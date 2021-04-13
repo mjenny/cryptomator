@@ -9,8 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.awt.AWTException;
-import java.awt.SystemTray;
+import dorkbox.systemTray.SystemTray;
+
+import java.awt.Image;
 import java.awt.TrayIcon;
 import java.util.Optional;
 
@@ -18,10 +19,12 @@ import java.util.Optional;
 public class TrayIconController {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TrayIconController.class);
+	private static final String TOOLTIP = "Cryptomator";
 
 	private final TrayImageFactory imageFactory;
 	private final Optional<UiAppearanceProvider> appearanceProvider;
 	private final TrayMenuController trayMenuController;
+	private final Image icon;
 	private final TrayIcon trayIcon;
 	private volatile boolean initialized;
 
@@ -30,7 +33,8 @@ public class TrayIconController {
 		this.trayMenuController = trayMenuController;
 		this.imageFactory = imageFactory;
 		this.appearanceProvider = appearanceProvider;
-		this.trayIcon = new TrayIcon(imageFactory.loadImage(), "Cryptomator", trayMenuController.getMenu());
+		this.icon = imageFactory.loadImage();
+		this.trayIcon = new TrayIcon(imageFactory.loadImage(), "Cryptomator");
 	}
 
 	public synchronized void initializeTrayIcon() throws IllegalStateException {
@@ -49,11 +53,16 @@ public class TrayIconController {
 			trayIcon.addActionListener(trayMenuController::showMainWindow);
 		}
 
-		try {
-			SystemTray.getSystemTray().add(trayIcon);
-			LOG.debug("initialized tray icon");
-		} catch (AWTException e) {
-			LOG.error("Error adding tray icon", e);
+		SystemTray systemTray = SystemTray.get("Cryptomator");
+
+		if (systemTray != null) {
+			systemTray.setEnabled(false);
+			systemTray.installShutdownHook();
+			systemTray.setImage(icon);
+			systemTray.setTooltip(TOOLTIP);
+			systemTray.setEnabled(true);
+		} else {
+			LOG.error("Error adding tray icon");
 		}
 
 		trayMenuController.initTrayMenu();
@@ -63,6 +72,7 @@ public class TrayIconController {
 
 	private void systemInterfaceThemeChanged(Theme theme) {
 		trayIcon.setImage(imageFactory.loadImage()); // TODO refactor "theme" is re-queried in loadImage()
+		SystemTray.get("Cryptomator").setImage(imageFactory.loadImage());
 	}
 
 	public boolean isInitialized() {
