@@ -63,12 +63,14 @@ class TrayMenuController {
 		showPreferencesItem.addActionListener(this::showPreferencesWindow);
 		menu.add(showPreferencesItem);
 
-		menu.addSeparator();
-		for (Vault v : vaults) {
-			MenuItem submenu = buildSubmenu(v);
-			menu.add(submenu);
+		if (vaults.size() > 0) {
+			menu.addSeparator();
+			for (Vault v : vaults) {
+				MenuItem submenu = buildSubmenu(v);
+				menu.add(submenu);
+			}
+			menu.addSeparator();
 		}
-		menu.addSeparator();
 
 		MenuItem lockAllItem = new MenuItem(resourceBundle.getString("traymenu.lockAllVaults"));
 		lockAllItem.addActionListener(this::lockAllVaults);
